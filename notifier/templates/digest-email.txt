@@ -24,11 +24,11 @@
 {% endfor %}
 
 ----
-Copyright 2017 Prometheus, Всі права захищено.
+Copyright 2018 Prometheus, Всі права захищено.
 ----
 Зв’яжіться з Prometheus:
 Facebook (http://www.facebook.com/prometheusmooc)
-ВКонтакте (https://vk.com/prometheusmooc)
+Telegram (https://t.me/prometheusmooc)
 Twitter (http://twitter.com/prometheusmooc)
 ----
 {% blocktrans %}If you would like to stop receiving these updates, you can turn off all Course Discussion digests from any course's Discussion Home page. You can also quickly turn off these notifications by going to {{unsubscribe_url}}.{% endblocktrans %}
