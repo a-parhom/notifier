@@ -5,12 +5,17 @@ import platform
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3', # Add 'postgresql_psycopg2', 'mysql', 'sqlite3' or 'oracle'.
-        'NAME':  os.path.join(os.getenv('NOTIFIER_DB_DIR', '.'), 'notifier.db'),
-        'USER': '',                      # Not used with sqlite3.
-        'PASSWORD': '',                  # Not used with sqlite3.
-        'HOST': '',                      # Set to empty string for localhost. Not used with sqlite3.
-        'PORT': '',                      # Set to empty string for default. Not used with sqlite3.
+        # Database backend defaults to 'sqlite3', but 'mysql' is also supported.
+        'ENGINE': os.getenv('NOTIFIER_DATABASE_ENGINE', 'django.db.backends.sqlite3'),
+        # Name should be set to database file path when using sqlite, and database name when using mysql.
+        'NAME': os.getenv('NOTIFIER_DATABASE_NAME', os.path.join(os.getenv('NOTIFIER_DB_DIR', '.'), 'notifier.db')),
+        # User and password are not used by sqlite, but you will have to set them when using mysql.
+        'USER': os.getenv('NOTIFIER_DATABASE_USER', ''),
+        'PASSWORD': os.getenv('NOTIFIER_DATABASE_PASSWORD', ''),
+        # Host is not used by sqlite. Empty string means localhost when using mysql.
+        'HOST': os.getenv('NOTIFIER_DATABASE_HOST', ''),
+        # Port is not used by sqlite. Empty string means default port when using mysql.
+        'PORT': os.getenv('NOTIFIER_DATABASE_PORT', ''),
     }
 }
 
@@ -95,6 +100,8 @@ FORUM_DIGEST_TASK_MAX_RETRIES = 2
 FORUM_DIGEST_TASK_RETRY_DELAY = 300
 # set the interval (in minutes) at which the top-level digest task is triggered
 FORUM_DIGEST_TASK_INTERVAL = int(os.getenv('FORUM_DIGEST_TASK_INTERVAL', 1440))
+# number of days to keep forum digest task entries in the database before they are deleted
+FORUM_DIGEST_TASK_GC_DAYS = int(os.getenv('FORUM_DIGEST_TASK_GC_DAYS', 30))
 
 
 LOGGING = {
