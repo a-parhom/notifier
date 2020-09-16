@@ -24,7 +24,7 @@
 {% endfor %}
 
 ----
-Copyright 2018 Prometheus, Всі права захищено.
+Copyright 2020 Prometheus, Всі права захищено.
 ----
 Зв’яжіться з Prometheus:
 Facebook (http://www.facebook.com/prometheusmooc)
