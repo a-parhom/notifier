@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Celery tasks for generating and sending digest emails.
 """
@@ -43,7 +44,7 @@ def generate_and_send_digests(users, from_dt, to_dt):
                 text, html = render_digest(
                     user, digest, settings.FORUM_DIGEST_EMAIL_TITLE, settings.FORUM_DIGEST_EMAIL_DESCRIPTION)
                 # send the message through our mailer
-                msg = EmailMultiAlternatives(
+		msg = EmailMultiAlternatives(
                     settings.FORUM_DIGEST_EMAIL_SUBJECT,
                     text,
                     settings.FORUM_DIGEST_EMAIL_SENDER,
