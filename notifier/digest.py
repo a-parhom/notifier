@@ -11,7 +11,6 @@ from django.template.loader import get_template
 from django.template import Context
 from django.utils.html import strip_tags
 from django.utils.translation import ugettext as _, activate, deactivate
-from statsd import statsd
 from opaque_keys.edx.keys import CourseKey
 
 from notifier.user import DIGEST_NOTIFICATION_PREFERENCE_KEY, LANGUAGE_PREFERENCE_KEY
@@ -61,7 +60,7 @@ def _trunc(s, length):
     # truncate, taking an extra -3 off the orig string for the ellipsis itself
     # see above comment about non-BMP support for why this is done in such
     # elaborate fashion.
-    uchr = lambda x: '\U{0:08x}'.format(x).decode('unicode-escape')
+    uchr = lambda x: r'\U{0:08x}'.format(x).decode('unicode-escape')
     return ''.join(uchr(p) for p in pts[:length - 3]).rsplit(' ', 1)[0].strip() + '...'
 
 
@@ -209,7 +208,6 @@ class DigestItem(object):
         self.dt = dt
 
 
-@statsd.timed('notifier.digest_render.elapsed')
 def render_digest(user, digest, title, description):
     """
     Generate HTML and plaintext renderings of digest material, suitable for

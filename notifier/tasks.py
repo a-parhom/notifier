@@ -22,8 +22,12 @@ from notifier.user import get_digest_subscribers, UserServiceException
 logger = logging.getLogger(__name__)
 
 
-@celery.task(rate_limit=settings.FORUM_DIGEST_TASK_RATE_LIMIT, max_retries=settings.FORUM_DIGEST_TASK_MAX_RETRIES)
-def generate_and_send_digests(users, from_dt, to_dt):
+DEFAULT_LANGUAGE = 'en'
+
+
+@celery.task(rate_limit=settings.FORUM_DIGEST_TASK_RATE_LIMIT,
+             max_retries=settings.FORUM_DIGEST_TASK_MAX_RETRIES)
+def generate_and_send_digests(users, from_dt, to_dt, language=None):
     """
     This task generates and sends forum digest emails to multiple users in a
     single background operation.
@@ -34,6 +38,7 @@ def generate_and_send_digests(users, from_dt, to_dt):
     `from_dt` and `to_dt` are datetime objects representing the start and end
     of the time window for which to generate a digest.
     """
+    settings.LANGUAGE_CODE = language or settings.LANGUAGE_CODE or DEFAULT_LANGUAGE
     users_by_id = dict((str(u['id']), u) for u in users)
     msgs = []
     try:
@@ -94,7 +99,7 @@ def _time_slice(minutes, now=None):
     >>> e = None
     >>> try:
     ...     _time_slice(14, datetime(2013, 1, 2, 0, 0))
-    ... except AssertionError, e:
+    ... except AssertionError as e:
     ...     pass
     ... 
     >>> e is not None
@@ -113,8 +118,7 @@ def _time_slice(minutes, now=None):
 @celery.task(
     bind=True,
     max_retries=settings.DAILY_TASK_MAX_RETRIES,
-    default_retry_delay=settings.DAILY_TASK_RETRY_DELAY
-)
+    default_retry_delay=settings.DAILY_TASK_RETRY_DELAY)
 def do_forums_digests(self):
 
     def batch_digest_subscribers():
@@ -151,6 +155,6 @@ def do_forums_digests(self):
 
     try:
         for user_batch in batch_digest_subscribers():
-            generate_and_send_digests.delay(user_batch, from_dt, to_dt)
-    except UserServiceException, e:
+            generate_and_send_digests.delay(user_batch, from_dt, to_dt, language=settings.LANGUAGE_CODE)
+    except UserServiceException as e:
         raise do_forums_digests.retry(exc=e)

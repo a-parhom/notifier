@@ -4,9 +4,9 @@ Functions in support of generating formatted digest emails of forums activity.
 import logging
 import sys
 
-from dogapi import dog_stats_api
 from django.conf import settings
 import requests
+import six
 
 
 logger = logging.getLogger(__name__)
@@ -32,14 +32,14 @@ def _http_get(*a, **kw):
     try:
         logger.debug('GET {} {}'.format(a[0], kw))
         response = requests.get(*a, **kw)
-    except requests.exceptions.ConnectionError, e:
+    except requests.exceptions.ConnectionError as e:
         _, msg, tb = sys.exc_info()
-        raise UserServiceException, "request failed: {}".format(msg), tb
+        six.reraise(UserServiceException, "request failed: {}".format(msg), tb)
     if response.status_code != 200:
-        raise UserServiceException, "HTTP Error {}: {}".format(
+        raise UserServiceException("HTTP Error {}: {}".format(
             response.status_code,
             response.reason
-        )
+        ))
     return response
 
 def get_digest_subscribers():
@@ -57,8 +57,7 @@ def get_digest_subscribers():
 
     logger.info('calling user api for digest subscribers')
     while True:
-        with dog_stats_api.timer('notifier.get_digest_subscribers.time'):
-            data = _http_get(api_url, params=params, headers=_headers(), **_auth()).json()
+        data = _http_get(api_url, params=params, headers=_headers(), **_auth()).json()
         for result in data['results']:
             yield result
         if data['next'] is None:
@@ -69,15 +68,14 @@ def get_digest_subscribers():
 def get_user(user_id):
     api_url = '{}/notifier_api/v1/users/{}/'.format(settings.US_URL_BASE, user_id)
     logger.info('calling user api for user %s', user_id)
-    with dog_stats_api.timer('notifier.get_user.time'):
-        r = _http_get(api_url, headers=_headers(), **_auth())
-        if r.status_code == 200:
-            user = r.json()
-            return user
-        elif r.status_code == 404:
-            return None
-        else:
-            r.raise_for_status()
-            raise Exception(
-                'unhandled response from user service: %s %s' %
-                (r.status_code, r.reason))
+    r = _http_get(api_url, headers=_headers(), **_auth())
+    if r.status_code == 200:
+        user = r.json()
+        return user
+    elif r.status_code == 404:
+        return None
+    else:
+        r.raise_for_status()
+        raise Exception(
+            'unhandled response from user service: %s %s' %
+            (r.status_code, r.reason))
